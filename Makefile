@@ -1,5 +1,3 @@
-.PHONY: install train tune evaluate predict test lint
-
 install:
 	uv sync --all-extras
 

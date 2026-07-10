@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import Path
-from stroke_risk_api.config import settings
+from src.config import settings
 
 def load_stroke_data() -> tuple[pd.DataFrame, pd.Series]:
     """Load stroke.csv data and split X/y"""

@@ -1,4 +1,4 @@
-from stroke_risk_api.data.loaders import load_stroke_data
+from src.ingest.load_data import load_stroke_data
 import pandas as pd
 
 def test_load_stroke_data():
