@@ -18,3 +18,5 @@ wheels/
 
 # Model specific files
 *.joblib
+mlruns/
+mlflow.db

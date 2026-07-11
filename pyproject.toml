@@ -38,3 +38,9 @@ packages = ["src/stroke_risk"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.uv]
+environments = [
+    "sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "sys_platform == 'linux'",
+]
