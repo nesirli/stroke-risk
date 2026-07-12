@@ -63,3 +63,32 @@ def test_predict_returns_503_when_no_model_available(monkeypatch):
 
     assert health_response.status_code == 200
     assert predict_response.status_code == 503
+
+
+def test_reload_picks_up_a_newly_promoted_model(monkeypatch):
+    def raise_not_found():
+        raise Exception("Registered Model with name=stroke-risk not found")
+
+    monkeypatch.setattr(app_main, "load_model", raise_not_found)
+
+    with TestClient(app_main.app) as client:
+        assert client.post("/predict", json=VALID_PATIENT).status_code == 503
+
+        monkeypatch.setattr(app_main, "load_model", lambda: StubModel())
+        reload_response = client.post("/reload")
+        predict_response = client.post("/predict", json=VALID_PATIENT)
+
+    assert reload_response.status_code == 200
+    assert reload_response.json() == {"status": "reloaded"}
+    assert predict_response.status_code == 200
+
+
+def test_reload_returns_503_when_no_model_available(client, monkeypatch):
+    def raise_not_found():
+        raise Exception("Registered Model with name=stroke-risk not found")
+
+    monkeypatch.setattr(app_main, "load_model", raise_not_found)
+
+    response = client.post("/reload")
+
+    assert response.status_code == 503

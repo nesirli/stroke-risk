@@ -146,6 +146,12 @@ docker exec <container-name> uv run python -m stroke_risk.models.train
 docker exec <container-name> uv run python -m stroke_risk.models.promote
 ```
 
+The running server loads the champion model once, at startup, and keeps that copy in memory. Training and promoting inside the container updates the MLflow registry on disk, but the already-running process won't notice on its own — call `/reload` afterward to pick it up without restarting the container:
+
+```bash
+curl -X POST http://localhost:8000/reload
+```
+
 To deploy behind a reverse proxy at a subpath, set the `ROOT_PATH` environment variable to that subpath, and make sure the proxy strips the prefix before forwarding the request to the container.
 
 ## API reference
@@ -154,6 +160,7 @@ To deploy behind a reverse proxy at a subpath, set the `ROOT_PATH` environment v
 |---|---|---|
 | `GET` | `/health` | Liveness check, returns `{"status": "ok"}` |
 | `POST` | `/predict` | Scores one patient, returns a risk prediction |
+| `POST` | `/reload` | Re-loads the champion model from the registry, without restarting |
 | `GET` | `/docs` | Interactive Swagger UI |
 | `GET` | `/gradio` | Web form UI |
 
@@ -183,7 +190,7 @@ Response:
 {"patient_id": 1, "prediction": "High Risk of Stroke"}
 ```
 
-If no model has been promoted yet, `/predict` returns a `503` with a clear message, instead of crashing the app.
+If no model has been promoted yet, `/predict` returns a `503` with a clear message, instead of crashing the app. `/reload` returns the same `503` if the registry still has no champion model.
 
 ## Testing
 
