@@ -1,5 +1,5 @@
 all:
-	install validate_data test tune train evaluate inference
+	install validate_data test tune train evaluate promote inference
 
 install:
 	uv sync --all-extras
@@ -12,6 +12,9 @@ tune:
 
 evaluate:
 	uv run python -m src.stroke_risk.models.evaluate
+
+promote:
+	uv run python -m src.stroke_risk.models.promote
 
 inference:
 	uv run python -m src.stroke_risk.serving.inference
