@@ -9,6 +9,14 @@ RUN uv sync --frozen
 
 COPY src /app/src
 
+# raw dataset + tuned hyperparameters, needed to run train/promote standalone
+# in any environment. Kept outside /app/data since that path gets shadowed by
+# the volume mount below; docker-entrypoint.sh seeds it in from here.
+COPY data/raw/stroke.csv /app/seed/raw/stroke.csv
+COPY data/best_params.json /app/seed/best_params.json
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
 # mount the host data/ dir here (contains mlflow.db + mlruns/) so the
 # registered model promoted via `make promote` is available to serve
 VOLUME ["/app/data"]
@@ -23,7 +31,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Leave unset to serve from the domain root.
 ENV ROOT_PATH=""
 
-CMD uv run uvicorn src.stroke_risk.app.main:app \
-    --host 0.0.0.0 --port 8000 \
-    --proxy-headers --forwarded-allow-ips="*" \
-    --root-path "$ROOT_PATH"
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+
+CMD ["sh", "-c", "uv run uvicorn src.stroke_risk.app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*' --root-path \"$ROOT_PATH\""]

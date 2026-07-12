@@ -20,5 +20,4 @@ wheels/
 *.joblib
 mlruns/
 mlflow.db
-best_params.json
 plots/
