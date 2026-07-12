@@ -6,13 +6,9 @@ from stroke_risk.config import settings
 
 def load_model():
     mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
-    runs = mlflow.search_runs(
-        experiment_names=[settings.mlflow_experiment],
-        order_by=["start_time DESC"],
-        max_results=1,
+    return mlflow.sklearn.load_model(
+        f"models:/{settings.mlflow_model_name}@{settings.mlflow_model_alias}"
     )
-    run_id = runs.iloc[0]["run_id"]
-    return mlflow.sklearn.load_model(f"runs:/{run_id}/model")
 
 def predict(patient: dict, model) -> dict:
     patient_id = patient.pop('id')
