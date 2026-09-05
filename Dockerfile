@@ -11,15 +11,15 @@ COPY src /app/src
 
 # raw dataset + tuned hyperparameters, needed to run train/promote standalone
 # in any environment. Kept outside /app/data since that path gets shadowed by
-# the volume mount below; docker-entrypoint.sh seeds it in from here.
+# an attached Railway Volume; docker-entrypoint.sh seeds it in from here.
 COPY data/raw/stroke.csv /app/seed/raw/stroke.csv
 COPY data/best_params.json /app/seed/best_params.json
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-# mount the host data/ dir here (contains mlflow.db + mlruns/) so the
-# registered model promoted via `make promote` is available to serve
-VOLUME ["/app/data"]
+# /app/data holds mlflow.db + mlruns/ at runtime. On Railway, attach a volume
+# there (railway volume add -m /app/data) to persist the promoted model across
+# redeploys; without it the entrypoint retrains on every deploy.
 
 EXPOSE 8000
 
