@@ -62,7 +62,7 @@ This section explains the "why" behind the setup. Not every choice is obvious fr
 
 **Great Expectations for data validation.** Before training, `validate_data.py` checks column names, value ranges, and category values. This catches bad input data early, before it silently breaks a model.
 
-**Docker Hub, not a cloud registry.** For a project this size, a full cloud setup was not needed. The deployment target is Coolify, a self-hosted platform that pulls images straight from Docker Hub. Less infrastructure, less cost, less to maintain.
+**Docker, not a cloud-specific runtime.** The whole app ships as a single Docker image, so it runs the same way locally, on CI, or on any container host. Railway builds the image from this repo and runs it; the Docker Hub push from CI is kept as a convenience for pulling the same image anywhere else.
 
 **A seed step in the Docker image.** The dataset and tuned hyperparameters live outside `/app/data` in the image (`/app/seed`). `docker-entrypoint.sh` copies them into `/app/data` on first start, only if they are missing. This matters because `/app/data` is a mounted volume in production. A volume mount can hide files baked into the image at that same path. Without this step, training would fail on a fresh deployment with no dataset in sight.
 
@@ -153,6 +153,18 @@ curl -X POST http://localhost:8000/reload
 ```
 
 To deploy behind a reverse proxy at a subpath, set the `ROOT_PATH` environment variable to that subpath, and make sure the proxy strips the prefix before forwarding the request to the container.
+
+## Deploying on Railway
+
+1. Create a new service from this repo. Railway detects the `Dockerfile` and the `railway.json` config automatically.
+2. (Recommended) Attach a volume at `/app/data` so the trained model and MLflow store survive redeploys:
+   ```bash
+   railway volume add -m /app/data
+   ```
+   Without a volume, the data is ephemeral: the container retrains and repromotes a model on every deploy, so the app still works.
+3. Deploy. `PORT` is injected by Railway; the app listens on it and the healthcheck hits `/health`.
+
+Leave `ROOT_PATH` unset to serve from the domain root.
 
 ## API reference
 

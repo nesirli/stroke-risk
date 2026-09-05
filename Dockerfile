@@ -23,14 +23,14 @@ VOLUME ["/app/data"]
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["uv", "run", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health', timeout=2).status==200 else 1)"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD python3 -c 'import os,urllib.request,sys; p=os.environ.get("PORT","8000"); sys.exit(0 if urllib.request.urlopen("http://localhost:"+p+"/health",timeout=5).status==200 else 1)'
 
-# ROOT_PATH lets Coolify serve this behind a subpath (e.g. /portfolio/stroke-predictor)
+# ROOT_PATH lets a reverse proxy serve this behind a subpath (e.g. /portfolio/stroke-risk)
 # so FastAPI/Gradio generate correctly prefixed asset and websocket URLs.
-# Leave unset to serve from the domain root.
+# Leave unset to serve from the domain root (the default on Railway).
 ENV ROOT_PATH=""
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
-CMD ["sh", "-c", "uv run uvicorn src.stroke_risk.app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*' --root-path \"$ROOT_PATH\""]
+CMD ["sh", "-c", "uv run uvicorn src.stroke_risk.app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*' --root-path \"$ROOT_PATH\""]
