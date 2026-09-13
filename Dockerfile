@@ -11,15 +11,15 @@ COPY src /app/src
 
 # raw dataset + tuned hyperparameters, needed to run train/promote standalone
 # in any environment. Kept outside /app/data since that path gets shadowed by
-# an attached Railway Volume; docker-entrypoint.sh seeds it in from here.
+# an attached volume; docker-entrypoint.sh seeds it in from here.
 COPY data/raw/stroke.csv /app/seed/raw/stroke.csv
 COPY data/best_params.json /app/seed/best_params.json
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-# /app/data holds mlflow.db + mlruns/ at runtime. On Railway, attach a volume
-# there (railway volume add -m /app/data) to persist the promoted model across
-# redeploys; without it the entrypoint retrains on every deploy.
+# /app/data holds mlflow.db + mlruns/ at runtime. On Dokploy, attach a volume
+# there to persist the promoted model across redeploys; without it the
+# entrypoint retrains on every deploy.
 
 EXPOSE 8000
 
@@ -28,7 +28,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
 
 # ROOT_PATH lets a reverse proxy serve this behind a subpath (e.g. /portfolio/stroke-risk)
 # so FastAPI/Gradio generate correctly prefixed asset and websocket URLs.
-# Leave unset to serve from the domain root (the default on Railway).
+# Leave unset to serve from the domain root (the default in the container).
 ENV ROOT_PATH=""
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
