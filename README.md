@@ -10,7 +10,7 @@ A small machine learning API that predicts stroke risk from patient health data.
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
 **Quick links:**
-[Live demo](https://nasirnesirli.com/portfolio/stroke-risk/gradio/) ·
+[Live demo](https://stroke-risk.nasirnesirli.com/gradio/) ·
 [API docs](https://nasirnesirli.com/portfolio/stroke-risk/docs) ·
 [Docker image](https://hub.docker.com/r/nasirnesirli/stroke-risk) ·
 [CI runs](https://github.com/nesirli/stroke-risk-api/actions)
